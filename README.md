@@ -18,6 +18,19 @@ To use this custom element in your HTML, simply include the JavaScript file and 
 <simple-fragment-canvas data-shader="path/to/your/shader.frag"></simple-fragment-canvas>
 ```
 
+or
+
+```javascript
+import SimpleFragmentCanvas from './simple-fragment-canvas.js'
+
+const simple_fragment_canvas = new SimpleFragmentCanvas({
+  shader: 'path/to/your/shader.frag'
+})
+
+document.body.appendChild(simple_fragment_canvas)
+```
+
+
 ## Development
 
 This project is developed using modern JavaScript features and WebGL 2.0. To contribute, simply clone the repository, make your changes, and submit a pull request.
