@@ -70,6 +70,9 @@ export default class SimpleFragmentCanvas extends HTMLElement {
     // Initialize the vertex array object to null
     this.vertex_array_object = null
 
+    // Initialize the start time to 0
+    this.start_time = 0
+
     // If a shader is provided, set it as a data attribute
     if (shader) this.setAttribute('data-shader', shader)
   }
@@ -103,6 +106,8 @@ export default class SimpleFragmentCanvas extends HTMLElement {
         this.createVertexArrayObject.call(this)
         // Dispatch a resize event
         this.dispatchEvent(this.resizeevent)
+        // Set the start time to the current time
+        this.start_time = performance.now()
         // Request an animation frame to refresh the canvas
         window.requestAnimationFrame(this.refresh.bind(this))
         return true
@@ -165,7 +170,7 @@ export default class SimpleFragmentCanvas extends HTMLElement {
     const positionLocation = this.gl.getAttribLocation(this.program, "a_position")
     this.gl.enableVertexAttribArray(positionLocation)
     this.gl.vertexAttribPointer(positionLocation, 2, this.gl.FLOAT, false, 0, 0)
-  
+
     // Assign the VAO to the vertex_array_object property so it can be accessed later
     this.vertex_array_object = vao
 
@@ -211,6 +216,19 @@ export default class SimpleFragmentCanvas extends HTMLElement {
     // Draw the fullscreen quad
     this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4)
   
+    // Get the location of the u_resolution uniform
+    const u_resolutionLocation = this.gl.getUniformLocation(this.program, "u_resolution")
+    // Set the value of the u_resolution uniform
+    this.gl.uniform2f(u_resolutionLocation, this.canvas.width, this.canvas.height)
+
+    // Get the elapsed time in seconds
+    const elapsedTime = (performance.now() - this.start_time) / 1000.0
+    // Get the location of the u_time uniform
+    const u_timeLocation = this.gl.getUniformLocation(this.program, "u_time")
+
+    // Set the value of the u_time uniform
+    this.gl.uniform1f(u_timeLocation, elapsedTime);
+
     // Unbind the VAO when done
     this.gl.bindVertexArray(null)
   }
