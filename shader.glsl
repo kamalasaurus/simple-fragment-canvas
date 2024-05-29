@@ -1,6 +1,8 @@
 #version 300 es
 
 precision mediump float;
+
+in vec4 v_position;
 out vec4 FragColor;
 uniform vec2 u_resolution;
 uniform float u_time;
