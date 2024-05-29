@@ -6,9 +6,11 @@ export default class SimpleFragmentCanvas extends HTMLElement {
     precision mediump float;
 
     in vec4 a_position;
+    out vec4 v_position;
 
     void main() {
         gl_Position = a_position;
+        v_position = a_position;
     }`
 
   // Define the vertices for a fullscreen quad
