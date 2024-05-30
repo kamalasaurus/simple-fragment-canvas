@@ -7,10 +7,12 @@ export default class SimpleFragmentCanvas extends HTMLElement {
 
     in vec4 a_position;
     out vec4 v_position;
+    out vec2 v_texCoord;
 
     void main() {
         gl_Position = a_position;
         v_position = a_position;
+        v_texCoord = a_position.xy * 0.5 + 0.5;
     }`
 
   // Define the vertices for a fullscreen quad
@@ -181,7 +183,7 @@ export default class SimpleFragmentCanvas extends HTMLElement {
   }
 
   refresh() {
-    this.loop.call(this)
+    this.loop.call(this, this.gl)
     window.requestAnimationFrame(this.refresh.bind(this))
   }
 
@@ -210,14 +212,14 @@ export default class SimpleFragmentCanvas extends HTMLElement {
   }
 
   // Function to render a frame
-  loop() {
+  loop(gl) {
     // Clear the canvas with black color
     this.clear(0.0, 0.0, 0.0, 0.0)
     // Bind the vertex array object
     this.gl.bindVertexArray(this.vertex_array_object)
     // Draw the fullscreen quad
     this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4)
-  
+
     // Get the location of the u_resolution uniform
     const u_resolutionLocation = this.gl.getUniformLocation(this.program, "u_resolution")
     // Set the value of the u_resolution uniform
@@ -230,6 +232,41 @@ export default class SimpleFragmentCanvas extends HTMLElement {
 
     // Set the value of the u_time uniform
     this.gl.uniform1f(u_timeLocation, elapsedTime);
+
+    // Create a texture
+    this.texture = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE0); // Select texture unit 0
+    gl.bindTexture(gl.TEXTURE_2D, this.texture); // Bind the texture
+
+    // Set up texture parameters
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    // Set the texture size to match the canvas
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.canvas);
+
+    // Create a framebuffer and attach the texture to it
+    const framebuffer = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
+
+    // Now you can render to the framebuffer and the result will be stored in the texture
+
+    this.clear(0.0, 0.0, 0.0, 0.0)
+    // Set the viewport to match the framebuffer size
+    gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+
+    // Render your scene here
+    // For example, if you're rendering a single triangle with gl.drawArrays:
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+    // Unbind the framebuffer to render to the screen again
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    // After rendering, you can use the texture as a uniform in your shader
+    var u_prevFrameLocation = gl.getUniformLocation(this.program, "u_prevFrame");
+    gl.uniform1i(u_prevFrameLocation, 0); // Assuming the texture is bound to texture unit 0
 
     // Unbind the VAO when done
     this.gl.bindVertexArray(null)
