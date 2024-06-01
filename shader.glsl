@@ -60,10 +60,10 @@ void main() {
     vec2 uv0 = uv;
     vec3 finalColor = vec3(0.0);
     
-    for (float i = 0.0; i < 4.0; i++) {
-        uv = fract(uv * 1.5) - 0.5;
+    for (float i = 0.0; i < 3.0; i++) {
+        uv = fract(uv * 1.85) - 0.5;
 
-        float d = length(uv) * exp(-length(uv0));
+        float d = length(uv) * exp(-length(uv0) * 0.1);
 
         vec3 col = palette(length(uv0) + i*.4 + u_time*.4);
 
